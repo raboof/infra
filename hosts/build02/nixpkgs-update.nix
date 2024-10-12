@@ -196,8 +196,12 @@ in
     script = "${nixpkgs-update-bin} delete-done --delete";
   };
 
-  systemd.services.nixpkgs-update-fetch-repology = mkFetcher "repology" "${nixpkgs-update-bin} fetch-repology";
-
+  # ensure the newer github updates are fetched first
+  systemd.services.nixpkgs-update-fetch-repology =
+    mkFetcher "repology" "${nixpkgs-update-bin} fetch-repology"
+    // {
+      after = [ "nixpkgs-update-fetch-github.service" ];
+    };
   # breaks with nix 2.24
   systemd.services.nixpkgs-update-fetch-updatescript = mkFetcher "updatescript" "${pkgs.nixVersions.nix_2_18}/bin/nix eval --raw -f ${./packages-with-update-script.nix}";
   systemd.services.nixpkgs-update-fetch-github = mkFetcher "github" "${inputs.nixpkgs-update-github-releases}/main.py";
